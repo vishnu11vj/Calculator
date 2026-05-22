@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Exo+2:wght@300;600&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    background: #0a0a0f;
+    background-image: radial-gradient(ellipse at 20% 50%, #1a0533 0%, transparent 60%),
+                      radial-gradient(ellipse at 80% 20%, #001a33 0%, transparent 50%);
+    font-family: 'Exo 2', sans-serif;
+  }
+  .calc {
+    background: #12121a;
+    border: 1px solid #2a2a3a;
+    border-radius: 20px;
+    padding: 24px;
+    width: 320px;
+    box-shadow: 0 0 60px rgba(120,0,255,0.15), 0 20px 60px rgba(0,0,0,0.8);
+  }
+  .display {
+    background: #080810;
+    border: 1px solid #1e1e2e;
+    border-radius: 12px;
+    padding: 20px 16px 12px;
+    margin-bottom: 20px;
+    min-height: 90px;
+    display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-end;
+  }
+  .display .expr { color: #555; font-size: 13px; font-family: 'Share Tech Mono'; min-height: 20px; }
+  .display .result {
+    color: #e0e0ff; font-size: 38px; font-family: 'Share Tech Mono';
+    text-shadow: 0 0 20px rgba(150,100,255,0.5);
+    word-break: break-all;
+  }
+  .buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  button {
+    padding: 18px 10px; border: none; border-radius: 10px;
+    font-family: 'Exo 2'; font-size: 16px; font-weight: 600;
+    cursor: pointer; transition: all 0.15s ease; position: relative; overflow: hidden;
+  }
+  button::after {
+    content: ''; position: absolute; inset: 0;
+    background: white; opacity: 0; transition: opacity 0.1s;
+  }
+  button:active::after { opacity: 0.08; }
+  .btn-num { background: #1c1c2c; color: #d0d0ff; border: 1px solid #2a2a3f; }
+  .btn-num:hover { background: #242438; border-color: #7060c0; }
+  .btn-op { background: #2a1545; color: #c080ff; border: 1px solid #5030a0; }
+  .btn-op:hover { background: #351a55; box-shadow: 0 0 15px rgba(150,80,255,0.3); }
+  .btn-eq {
+    background: linear-gradient(135deg, #7030e0, #4010a0);
+    color: #fff; border: none; grid-column: span 2;
+    box-shadow: 0 4px 20px rgba(120,50,220,0.4);
+  }
+  .btn-eq:hover { box-shadow: 0 4px 30px rgba(120,50,220,0.7); transform: translateY(-1px); }
+  .btn-clear { background: #2a1010; color: #ff6060; border: 1px solid #601010; }
+  .btn-clear:hover { background: #351515; }
+  .btn-zero { grid-column: span 2; }
+</style>
+</head>
+<body>
+<div class="calc">
+  <div class="display">
+    <div class="expr" id="expr"></div>
+    <div class="result" id="result">0</div>
+  </div>
+  <div class="buttons">
+    <button class="btn-clear" onclick="clearAll()">AC</button>
+    <button class="btn-op" onclick="toggleSign()">+/-</button>
+    <button class="btn-op" onclick="percent()">%</button>
+    <button class="btn-op" onclick="op('/')">÷</button>
+    <button class="btn-num" onclick="num('7')">7</button>
+    <button class="btn-num" onclick="num('8')">8</button>
+    <button class="btn-num" onclick="num('9')">9</button>
+    <button class="btn-op" onclick="op('*')">×</button>
+    <button class="btn-num" onclick="num('4')">4</button>
+    <button class="btn-num" onclick="num('5')">5</button>
+    <button class="btn-num" onclick="num('6')">6</button>
+    <button class="btn-op" onclick="op('-')">−</button>
+    <button class="btn-num" onclick="num('1')">1</button>
+    <button class="btn-num" onclick="num('2')">2</button>
+    <button class="btn-num" onclick="num('3')">3</button>
+    <button class="btn-op" onclick="op('+')">+</button>
+    <button class="btn-num btn-zero" onclick="num('0')">0</button>
+    <button class="btn-num" onclick="dot()">.</button>
+    <button class="btn-eq" onclick="equals()">=</button>
+  </div>
+</div>
+<script>
+  let cur = '0', expr = '', op = null, fresh = false;
+  const R = document.getElementById('result');
+  const E = document.getElementById('expr');
+  function update() { R.textContent = cur; }
+  function num(n) {
+    if (fresh) { cur = n; fresh = false; }
+    else cur = cur === '0' ? n : cur + n;
+    update();
+  }
+  function dot() {
+    if (fresh) { cur = '0.'; fresh = false; }
+    else if (!cur.includes('.')) cur += '.';
+    update();
+  }
+  function clearAll() { cur = '0'; expr = ''; op = null; fresh = false; E.textContent = ''; update(); }
+  function toggleSign() { cur = cur.startsWith('-') ? cur.slice(1) : '-' + cur; update(); }
+  function percent() { cur = String(parseFloat(cur) / 100); update(); }
+  function op(o) {
+    expr = cur + ' ' + o; E.textContent = expr;
+    op = o; fresh = true;
+  }
+  function equals() {
+    if (!op) return;
+    const a = parseFloat(expr), b = parseFloat(cur);
+    E.textContent = expr + ' ' + cur + ' =';
+    const ops = {'+': a+b, '-': a-b, '*': a*b, '/': a/b};
+    cur = String(ops[op]); op = null; fresh = true; update();
+  }
+</script>
+</body>
+</html>
